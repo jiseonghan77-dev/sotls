@@ -101,19 +101,22 @@ if "step" not in st.session_state:
 if "analysis_type" not in st.session_state:
     st.session_state.analysis_type = None
 
+if "analysis_level" not in st.session_state:
+    st.session_state.analysis_type = None
+
 if st.session_state == 0:
     st.title("📊 학생 성적 계산 & 생기부 분석")
     st.subheader("원하는 기능을 선택하세요")
 
-    col1, col2 = st.columns(2)
+    menu1, menu2 = st.columns(2)
 
-    with col1:
+    with menu1:
         if st.button("📈 성적 계산", use_container_width=True):
             st.session_state.analysis_type = "grade"
             st.session_state.step = 1
             st.rerun()
 
-    with col2:
+    with menu2:
         if st.button("📚 생기부 분석", use_container_width=True):
             st.session_state.analysis_type = "school_record"
             st.session_state.step = 10
@@ -343,3 +346,27 @@ if st.session_state.step == 5:
                 "현재 성적에서 설정한 목표 평균을 달성할 수 있는 "
                 "등급 조합을 찾지 못했습니다."
             )
+
+if st.session_state.step == 10:
+    st.title("📚 생기부 분석")
+    st.subheader("생기부 분석, 어떤 맛으로?")
+
+    level1, level2 = st.columns(2)
+
+    with level1:
+        if st.button("📈 매운맛 분석", use_container_width=True):
+            st.session_state.analysis_level = "Hot"
+            st.session_state.step = 11
+            st.rerun()
+
+    with level2:
+        if st.button("순핫맛 분석", use_container_width=True):
+            st.session_state.analysis_level = "Normal"
+            st.session_state.step = 15
+            st.rerun()
+
+if st.session_state == 11:
+
+
+if st.session_state == 15:
+    
