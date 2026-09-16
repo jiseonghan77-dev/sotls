@@ -354,13 +354,13 @@ if st.session_state.step == 10:
     level1, level2 = st.columns(2)
 
     with level1:
-        if st.button("📈 매운맛 분석", use_container_width=True):
+        if st.button("🔥 매운맛 분석", use_container_width=True):
             st.session_state.analysis_level = "Hot"
             st.session_state.step = 11
             st.rerun()
 
     with level2:
-        if st.button("순핫맛 분석", use_container_width=True):
+        if st.button("🍃 순핫맛 분석", use_container_width=True):
             st.session_state.analysis_level = "Normal"
             st.session_state.step = 15
             st.rerun()
