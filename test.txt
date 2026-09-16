@@ -1,5 +1,324 @@
-Hello world
+import streamlit as st
+import pandas as pd
+import itertools
+import math
 
-bae
+st.title("너 이 생기부로 어디갈래?")
 
+subjects = { #과목 목록
+        1: {
+            1: {
+                "공통": ["공통국어1", "공통수학1", "공통영어1", "통합사회1", "통합과학1", "한국사1"]
+               },
 
+            2: {
+                "공통": ["공통국어2", "공통수학2", "공통영어2", "통합사회2", "통합과학2", "한국사2"]
+               }
+            },
+        2: {
+            1: {
+                "공통": ["문학", "대수", "영어1", "중국어"],
+             
+                "선택": ["물리학", "화학", "생명과학", "지구과학"
+                       ,"세계시민과 지리", "세계사", "사회와 문화", "현대사회와 윤리"]
+               },
+
+            2: {
+                "공통": ["화법과 언어", "미적분1", "영어2", "중국어 회화"],
+             
+                "선택": ["독서 토론과 글쓰기", "경제 수학", "기하"
+                       ,"역학과 에너지", "물질과 에너지", "세포와 물질대사", "지구시스템과학"
+                       ,"도시의 미래 탐구", "동아시아 역사 기행", "정치", "경제", "윤리와 사상"]
+               }
+           },
+        3: {
+            1: {
+                "공통": ["독서와 작문", "확률과 통계", "영어 독해와 작문", "인공지능 기초"],
+
+                "선택": ["주제 탐구 독서", "미적분2", "미디어 영어"
+                       ,"한국지리 탐구", "법과 사회", "국제 관계의 이해", "인문학과 윤리"
+                       ,"전자기와 양자", "화학 반응의 세계", "생물의 유전", "행성우주과학"]
+            }
+
+        }
+}
+
+selection_rules = {1: {1: 0, 2: 0}, 2: {1: 3, 2: 4}, 3: {1: 4}}
+
+def grade9(rank, total):
+    percent = rank / total * 100
+    if percent <=4:
+        return 1
+    elif percent <= 11:
+        return 2
+    elif percent <= 23:
+        return 3
+    elif percent <= 40:
+        return 4
+    elif percent <= 60:
+        return 5
+    elif percent <= 77:
+        return 6
+    elif percent <= 89:
+        return 7
+    elif percent <= 96:
+        return 8
+    else:
+        return 9
+    
+def grade5(rank, total):
+    percent = rank / total * 100
+    if percent <= 10:
+        return 1
+    elif percent <= 34:
+        return 2
+    elif percent <= 66:
+        return 3
+    elif percent <= 90:
+        return 4
+    else:
+        return 5
+
+def find_rank_for_grade(total_students, target_grade):
+    for rank in range(1, total_students + 1):
+        if grade5(rank, total_students) == target_grade:
+            return rank
+    return total_students
+
+def required_rank_change(row, target_grade):
+    current_rank = int(row["등수"])
+    total_students = int(row["수강자수"])
+
+    target_rank = find_rank_for_grade(total_students, target_grade)
+
+    change = current_rank - target_rank
+
+    return max(0, change)
+
+if "step" not in st.session_state: 
+    st.session_state.step = 1
+
+if st.session_state.step == 1: #학년 & 학기 선택
+    grade = st.selectbox("학년 선택", [1, 2, 3])
+
+    if grade == 3:
+        semester = 1
+    else:
+        semester = st.selectbox("학기 선택", [1, 2])
+
+    if st.button("다음"):
+        st.session_state.grade = grade
+        st.session_state.semester = semester
+        st.session_state.step = 2
+        st.rerun()
+
+if st.session_state.step == 2:
+    grade = st.session_state.grade #변수 정의
+    semester = st.session_state.semester
+    max_subjects = selection_rules[grade][semester]
+
+    st.header(f"{grade}학년 {semester}학기")
+    st.write(f"선택 과목 수 : {max_subjects}")
+
+    st.subheader("공통과목") #공통과목 표시
+    for subject in subjects[grade][semester]["공통"]: st.write(subject)
+
+    if "선택" in subjects[grade][semester]: #선택과목 표시
+        st.subheader("선택과목")
+        selected_subjects = st.multiselect("선택과목 선택", subjects[grade][semester]["선택"])
+    if st.button("다음"):
+        if len(selected_subjects) != max_subjects:
+            st.warning(f"선택과목을 정확히 {max_subjects}개 선택해주세요.")
+        else:
+            st.success("선택 완료!")
+            st.session_state.selected_subjects = selected_subjects
+            st.session_state.step = 3
+    st.rerun()
+
+if st.session_state.step == 3:
+    import pandas as pd
+    grade = st.session_state.grade
+    semester = st.session_state.semester
+    selected_subjects = st.session_state.selected_subjects
+    
+    all_subjects = (subjects[grade][semester]["공통"] + selected_subjects)
+    st.header("과목별 성적 입력")
+
+    if "grade_df" not in st.session_state:
+        st.session_state.grade_df = pd.DataFrame(
+            {
+                "과목": all_subjects,
+                "수강자수": [0] * len(all_subjects),
+                "등수": [0] * len(all_subjects)
+            }
+        )
+
+    edited_df = st.data_editor(
+        st.session_state.grade_df,
+        use_container_width=True
+    )    
+
+    if st.button("등급 계산"):
+        if (edited_df["수강자수"] <= 0).any():
+            st.error("모든 과목의 등수를 입력하세요.")
+        elif (edited_df["등수"] <= 0).any():
+            st.error("모든 과목의 등수를 입력하세요.")
+        else:
+            st.session_state.grade_df = edited_df
+            st.session_state.step = 4
+            st.rerun()
+    
+if st.session_state.step == 4:
+    st.header("등급 계산 결과")
+    df = st.session_state.grade_df.copy()
+
+    df["9등급"] = df.apply(
+        lambda row: grade9(row["등수"], row["수강자수"]), axis=1
+    )
+
+    df["5등급"] = df.apply(
+        lambda row: grade5(row["등수"], row["수강자수"]), axis=1
+    )
+
+    st.dataframe(df, use_container_width=True)
+
+    avg9 = round(df["9등급"].mean(), 2)
+    avg5 = round(df["5등급"].mean(), 2)
+
+    st.subheader("전체 평균")
+
+    st.write(f"9등급 평균 : {avg9}")
+    st.write(f"5등급 평균 : {avg5}")
+
+    st.session_state.target_avg_5 = st.number_input(
+        "🎯 목표 5등급 평균",
+        min_value=1.0,
+        max_value=5.0,
+        value=2.0,
+        step=0.1
+    )
+
+    # 계산한 데이터 저장
+    st.session_state.df =df
+
+    if st.button("분석 보기"):
+        st.session_state.step = 5
+        st.rerun()
+
+if st.session_state.step == 5:
+
+    st.header("🎯 목표 성적 분석")
+    df = st.session_state.df.copy()
+    target_avg = st.session_state.target_avg_5
+
+    # 현재 평균
+    current_avg = df["5등급"].mean()
+
+    st.write(f"현재 5등급 평균 : {current_avg:.2f}")
+    st.write(f"목표 5등급 평균 : {target_avg:.2f}")
+
+    # 현재 등급
+    current_grades = df["5등급"].astype(int).tolist()
+
+    # 각 과목에서 만들 수 있는 목표 등급
+    possible_grades = []
+
+    for grade in current_grades:
+        grades = list(range(1, grade + 1))
+        possible_grades.append(grades)
+
+    # 전체 조합 수 계산
+
+    total_combinations = math.prod(
+        len(grades) for grades in possible_grades
+    )
+
+    # 진행률 표시
+
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+
+    # 가능한 모든 등급 조합 생성
+    combinations = itertools.product(*possible_grades)
+
+    best_combination = None
+    best_total_change = float("inf")
+
+    for count, combination in enumerate(combinations, start=1):
+
+        # 현재 진행률
+        progress = count / total_combinations
+
+        progress_bar.progress(progress)
+
+        status_text.write(
+            f"🔍 성적 조합 분석 중... "
+            f"{count:,} / {total_combinations:,}"
+            f"({progress * 100:.1f}%)"
+        )
+
+        # 목표 평균을 만족하는지 확인
+        if sum(combination) / len(combination) <= target_avg:
+
+            total_change = 0
+
+            for i, target_grade in enumerate(combination):
+
+                current_grade = current_grades[i]
+
+                # 현재 등급보다 높은 등급을 목표로 할 경우
+                if target_grade < current_grade:
+
+                    change = required_rank_change(df.iloc[i], target_grade)
+                    total_change += change
+
+            # 지금까지보다 등수 상승량이 적으면 교체
+            if total_change < best_total_change:
+                best_total_change = total_change
+                best_combination = combination
+
+        # 분석 완료
+        progress_bar.progress(1.0)
+        status_text.success("✅ 분석 완료!")
+
+        # 결과 출력
+        if best_combination is not None:
+
+            result_df = df.copy()
+            result_df["목표등급"] = best_combination
+            result_df["목표등수"] = result_df.apply(
+                lambda row: find_rank_for_grade(
+                    int(row["수강자수"]),
+                    int(row["목표등급"])
+                ), 
+                axis=1
+            )
+
+            result_df["필요한 등수 상승"] = (
+                result_df["등수"] - result_df["목표등수"]
+            ).clip(lower=0)
+
+            st.subheader("📊 최적의 목표 등급 조합")
+
+            st.dataframe(
+                result_df[
+                    [
+                        "과목", "등수", "수강자수", "5등급", "목표등급", "목표등수", "필요한 등수 상승"
+                    ]
+                ],
+                use_container_width=True
+            )
+
+            st.header("🎯 분석 결과")
+
+            st.write(
+                f"목표 평균 {target_avg:.2f}이하를 만들기 위해 "
+                f"필요한 총 등수 상승은 약 {best_total_change}등입니다."
+            )
+
+        else:
+
+            st.write(
+                "현재 성적에서 설정한 목표 평균을 달성할 수 있는 "
+                "등급 조합을 찾지 못했습니다."
+            )
