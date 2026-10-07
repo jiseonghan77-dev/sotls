@@ -4,7 +4,6 @@ import itertools
 import math
 import time
 from google import genai
-from google.colab import userdata
 import os
 
 st.title("너 이 생기부로 어디갈래?")
@@ -279,12 +278,6 @@ if st.session_state.step == 5:
 
         progress_bar.progress(progress)
 
-        status_text.write(
-            f"🔍 성적 조합 분석 중... "
-            f"{count:,} / {total_combinations:,}"
-            f"({progress * 100:.1f}%)"
-        )
-
         # 목표 평균을 만족하는지 확인
         if sum(combination) / len(combination) <= target_avg:
 
@@ -296,7 +289,6 @@ if st.session_state.step == 5:
 
                 # 현재 등급보다 높은 등급을 목표로 할 경우
                 if target_grade < current_grade:
-
                     change = required_rank_change(df.iloc[i], target_grade)
                     total_change += change
 
@@ -305,52 +297,51 @@ if st.session_state.step == 5:
                 best_total_change = total_change
                 best_combination = combination
 
-        # 분석 완료
-        progress_bar.progress(1.0)
-        status_text.success("✅ 분석 완료!")
+    # 분석 완료
+    progress_bar.progress(1.0)
+    status_text.success("✅ 분석 완료!")
 
-        # 결과 출력
-        if best_combination is not None:
+    # 결과 출력
+    if best_combination is not None:
 
-            result_df = df.copy()
-            result_df["목표등급"] = best_combination
-            result_df["목표등수"] = result_df.apply(
-                lambda row: find_rank_for_grade(
-                    int(row["수강자수"]),
-                    int(row["목표등급"])
-                ), 
-                axis=1
-            )
+        result_df = df.copy()
+        result_df["목표등급"] = list(best_combination)
+        result_df["목표등수"] = result_df.apply(
+            lambda row: find_rank_for_grade(
+                int(row["수강자수"]),
+                int(row["목표등급"])
+            ), 
+            axis=1
+        )
 
-            result_df["필요한 등수 상승"] = (
-                result_df["등수"] - result_df["목표등수"]
-            ).clip(lower=0)
+        result_df["필요한 등수 상승"] = (
+            result_df["등수"] - result_df["목표등수"]
+        ).clip(lower=0)
 
-            st.subheader("📊 최적의 목표 등급 조합")
+        st.subheader("📊 최적의 목표 등급 조합")
 
-            st.dataframe(
-                result_df[
-                    [
-                        "과목", "등수", "수강자수", "5등급", "목표등급", "목표등수", "필요한 등수 상승"
-                    ]
-                ],
-                use_container_width=True
-            )
+        st.dataframe(
+            result_df[
+                [
+                    "과목", "등수", "수강자수", "5등급", "목표등급", "목표등수", "필요한 등수 상승"
+                ]
+            ],
+            use_container_width=True
+        )
 
-            st.header("🎯 분석 결과")
+        st.header("🎯 분석 결과")
 
-            st.write(
-                f"목표 평균 {target_avg:.2f}이하를 만들기 위해 "
-                f"필요한 총 등수 상승은 약 {best_total_change}등입니다."
-            )
+        st.write(
+            f"목표 평균 {target_avg:.2f}이하를 만들기 위해 "
+            f"필요한 총 등수 상승은 약 {best_total_change}등입니다."
+        )
 
-        else:
-
-            st.write(
-                "현재 성적에서 설정한 목표 평균을 달성할 수 있는 "
-                "등급 조합을 찾지 못했습니다."
-            )
-
+    else:
+        st.write(
+            "현재 성적에서 설정한 목표 평균을 달성할 수 있는 "
+            "등급 조합을 찾지 못했습니다."
+        )
+            
 if st.session_state.step == 10:
     st.title("📚 생기부 분석")
     st.subheader("생기부 분석, 어떤 맛으로?")
@@ -372,8 +363,9 @@ if st.session_state.step == 10:
 if st.session_state == 11:
         # 1. API 클라이언트 설정
         try:
-            os.environ["GEMINI_API_KEY"] = userdata.get('GEMINI_API_KEY')
-            client = genai.Client()
+            client = genai.Client(
+            api_key=st.secrets["GEMINI_API_KEY"]
+        )
         except Exception as e:
             print("❌ API 키를 확인해주세요. 왼쪽 열쇠 메뉴에 GEMINI_API_KEY가 있어야 합니다.")
         
@@ -476,8 +468,9 @@ if st.session_state == 11:
 if st.session_state == 15:
     # 1. API 클라이언트 설정
         try:
-            os.environ["GEMINI_API_KEY"] = userdata.get('GEMINI_API_KEY')
-            client = genai.Client()
+            client = genai.Client(
+            api_key=st.secrets["GEMINI_API_KEY"]
+        )
         except Exception as e:
             print("❌ API 키를 확인해주세요. 왼쪽 열쇠 메뉴에 GEMINI_API_KEY가 있어야 합니다.")
         
