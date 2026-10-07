@@ -33,7 +33,7 @@ subjects = { # 과목 목록
     }
 }
 
-selection_rules = {1: {1: 0, 2: 0}, 2: {1: 3, 2: 4}, 3: {1: 4}}
+selection_rules = {1: {1: 0, 2: 0}, 2: {1: 3, 2: 4}, 3: {1: 3}}
 
 def grade9(rank, total):
     percent = rank / total * 100
