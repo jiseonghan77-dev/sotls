@@ -56,10 +56,10 @@ def grade5(rank, total):
     else: return 5
 
 def find_rank_for_grade(total_students, target_grade):
-    for rank in range(1, total_students + 1):
+    for rank in range(total_students, 0, -1):
         if grade5(rank, total_students) == target_grade:
             return rank
-    return total_students
+    return None
 
 def required_rank_change(row, target_grade):
     current_rank = int(row["등수"])
