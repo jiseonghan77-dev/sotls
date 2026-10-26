@@ -65,6 +65,8 @@ def required_rank_change(row, target_grade):
     current_rank = int(row["등수"])
     total_students = int(row["수강자수"])
     target_rank = find_rank_for_grade(total_students, target_grade)
+    if target_rank is None:
+        return float("inf")
     change = current_rank - target_rank
     return max(0, change)
 
