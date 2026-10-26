@@ -349,7 +349,7 @@ elif st.session_state.step == 11:
             for i in range(3):
                 try:
                     response = client.models.generate_content(
-                        model='gemini-2.5-flash',
+                        model='gemini-3.8-flash',
                         contents=prompt,
                     )
                     break
@@ -432,7 +432,7 @@ elif st.session_state.step == 15:
             
             try:
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-3.8-flash',
                     contents=prompt,
                 )
                 분석_결과 = response.text
