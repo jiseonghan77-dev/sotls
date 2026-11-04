@@ -363,7 +363,7 @@ elif st.session_state.step == 11:
             
             try:
                 response = client.models.generate_content(
-                    model='gemini-3.6-flash',
+                    model='gemini-3.8-flash',
                     contents=prompt,
                 )
                     
@@ -382,14 +382,12 @@ elif st.session_state.step == 11:
                 
             파일명 = f"매운맛_분석_{희망대학}_{희망학과}.txt"
             
-            try:
-                with open(파일명, "w", encoding="utf-8") as f:
-                    f.write(분석_결과)
-
-                st.success(f"💾 분석 결과가 '{파일명}'으로 저장되었습니다.")
-
-            except Exception as e:
-                st.info("💡 분석 결과는 화면에서 확인할 수 있습니다.")
+            st.download_button(
+                label="📥 분석 결과 다운로드",
+                data=분석_결과,
+                file_name=파일명,
+                mine="text/plain"
+            )
 
 # Step 15: 순한맛 분석
 elif st.session_state.step == 15:
@@ -462,7 +460,7 @@ elif st.session_state.step == 15:
 
             try:
                 response = client.models.generate_content(
-                    model="gemini-3.6-flash",
+                    model="gemini-3.8-flash",
                     contents=prompt,
                 )
 
@@ -481,11 +479,9 @@ elif st.session_state.step == 15:
 
             파일명 = f"순한맛_분석_{희망대학}_{희망학과}.txt"
 
-            try:
-                with open(파일명, "w", encoding="utf-8") as f:
-                    f.write(분석_결과)
-
-                st.success(f"💾 분석 결과가 '{파일명}'으로 저장되었습니다.")
-
-            except Exception as e:
-                st.info("💡 분석 결과는 화면에서 확인할 수 있습니다.")
+            st.download_button(
+                            label="📥 분석 결과 다운로드",
+                            data=분석_결과,
+                            file_name=파일명,
+                            mine="text/plain"
+                        )
