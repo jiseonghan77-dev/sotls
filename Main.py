@@ -386,7 +386,7 @@ elif st.session_state.step == 11:
                 label="📥 분석 결과 다운로드",
                 data=분석_결과,
                 file_name=파일명,
-                mine="text/plain"
+                mime="text/plain"
             )
 
 # Step 15: 순한맛 분석
@@ -483,5 +483,5 @@ elif st.session_state.step == 15:
                             label="📥 분석 결과 다운로드",
                             data=분석_결과,
                             file_name=파일명,
-                            mine="text/plain"
+                            mime="text/plain"
                         )
